@@ -45,6 +45,76 @@ const run = async () => {
 
     //
   
+    app.get('/book/:id', async (req, res) => {
+      const id = req.params.id;
+
+      const result = await bookCollection.findOne({ _id: ObjectId(id) });
+      console.log(result);
+      res.send(result);
+    });
+
+    app.delete('/book/:id', async (req, res) => {
+      const id = req.params.id;
+
+      const result = await bookCollection.deleteOne({ _id: ObjectId(id) });
+      console.log(result);
+      res.send(result);
+    });
+
+    app.post('/review/:id', async (req, res) => {
+      const bookId = req.params.id;
+      const review = req.body.reviews;
+
+
+      const result = await bookCollection.updateOne(
+        { _id: ObjectId(bookId) },
+        { $push: { reviews: review } }
+      );
+
+      if (result.modifiedCount !== 1) {
+        console.error('book not found or review not added');
+        res.json({ error: 'book not found or review not added' });
+        return;
+      }
+
+      console.log('Review added');
+      res.json({ message: 'Review not added' });
+    });
+
+    app.get('/review/:id', async (req, res) => {
+      const bookId = req.params.id;
+
+      const result = await bookCollection.findOne(
+        { _id: ObjectId(bookId) },
+        { projection: { _id: 0, reviews: 1 } }
+      );
+
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).json({ error: 'book not found' });
+      }
+    });
+
+    app.post('/user', async (req, res) => {
+      const user = req.body;
+
+      const result = await userCollection.insertOne(user);
+
+      res.send(result);
+    });
+
+    app.get('/user/:email', async (req, res) => {
+      const email = req.params.email;
+
+      const result = await userCollection.findOne({ email });
+
+      if (result?.email) {
+        return res.send({ status: true, data: result });
+      }
+
+      res.send({ status: false });
+    });
 
     //
   } finally {
