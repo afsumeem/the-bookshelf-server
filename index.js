@@ -72,10 +72,10 @@ const run = async () => {
     //post a new book
 
     app.post('/add-book', async (req, res) => {
-      const book = req.body;
+      const data = req.body;
 
-      const result = await bookCollection.insertOne(book);
-
+      const result = await bookCollection.insertOne(data);
+    console.log(result);
       res.json(result);
     });
 
@@ -97,6 +97,8 @@ const run = async () => {
       res.send(result);
     });
 
+    //
+
     app.post('/review/:id', async (req, res) => {
       const bookId = req.params.id;
       const review = req.body.reviews;
@@ -116,6 +118,8 @@ const run = async () => {
       console.log('Review added');
       res.json({ message: 'Review not added' });
     });
+
+    //
 
     app.get('/review/:id', async (req, res) => {
       const bookId = req.params.id;
