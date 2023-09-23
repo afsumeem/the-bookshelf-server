@@ -24,18 +24,54 @@ const run = async () => {
     const db = client.db('the-bookshelf');
     const bookCollection = db.collection('books');
 
+    //get latest books
+    app.get("/latest-books", async (req, res) => {
+      const sort = { publishedDate: -1 };
+      const result = await bookCollection
+        .find({})
+        .sort(sort)
+        .limit(10)
+        .toArray();
+       res.send({
+        status:true,
+        data: result,
+      });
+    });
     // get all books
 
     app.get('/books', async (req, res) => {
-      const cursor = bookCollection.find({});
-      const book = await cursor.toArray();
+      const { search, genre, publicationYear } = req.query;
 
-      res.send({ status: true, data: book });
+      const filter = {};
+
+      if (search) {
+        filter.$or = [
+          { title: { $regex: search, $options: "i" } },
+          { author: { $regex: search, $options: "i" } },
+          { genre: { $regex: search, $options: "i" } },
+        ];
+      }
+      if (genre) {
+        filter.genre = genre;
+      }
+
+      if (publicationYear) {
+        filter.publicationDate = {
+          $regex: `^${publicationYear}-`,
+          $options: "i",
+        };
+      }
+      const books = await bookCollection.find(filter).toArray();
+
+       res.send({
+        status:true,
+        data: books,
+      });
     });
 
     //post a new book
 
-    app.post('/books', async (req, res) => {
+    app.post('/add-book', async (req, res) => {
       const book = req.body;
 
       const result = await bookCollection.insertOne(book);
