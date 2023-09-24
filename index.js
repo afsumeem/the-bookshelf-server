@@ -25,7 +25,7 @@ const run = async () => {
     const bookCollection = db.collection('books');
 
     //get latest books
-    app.get("/latest-books", async (req, res) => {
+    app.get("/books", async (req, res) => {
       const sort = { publishedDate: -1 };
       const result = await bookCollection
         .find({})
@@ -39,7 +39,7 @@ const run = async () => {
     });
     // get all books
 
-    app.get('/books', async (req, res) => {
+    app.get('/allBooks', async (req, res) => {
       const { search, genre, publicationYear } = req.query;
 
       const filter = {};
@@ -71,7 +71,7 @@ const run = async () => {
 
     //post a new book
 
-    app.post('/add-book', async (req, res) => {
+    app.post('/books/add-book', async (req, res) => {
       const data = req.body;
 
       const result = await bookCollection.insertOne(data);
@@ -79,9 +79,9 @@ const run = async () => {
       res.json(result);
     });
 
-    //
+    //single book
   
-    app.get('/book/:id', async (req, res) => {
+    app.get('/books/:id', async (req, res) => {
       const id = req.params.id;
 
       const result = await bookCollection.findOne({ _id: ObjectId(id) });
@@ -89,6 +89,33 @@ const run = async () => {
       res.send(result);
     });
 
+    //update book
+
+    app.patch("/books/edit-book/:id", async (req, res) => {
+    
+          const bookId = req.params.id;
+          const updatedBookData = req.body;
+
+          delete updatedBookData._id;
+
+          const result = await bookCollection.updateOne(
+            { _id: new ObjectId(bookId) },
+            { $set: updatedBookData }
+          );
+
+          if (result.matchedCount > 0) {
+            res.status(200).send({
+              message: "Book updated successfully!",
+              book: updatedBookData,
+            });
+          } else {
+             res.status(404).send({
+              message: "Book not found",
+            });
+          }
+    });
+
+    //delete book
     app.delete('/book/:id', async (req, res) => {
       const id = req.params.id;
 
@@ -97,7 +124,7 @@ const run = async () => {
       res.send(result);
     });
 
-    //
+    //review
 
     app.post('/review/:id', async (req, res) => {
       const bookId = req.params.id;
@@ -119,7 +146,7 @@ const run = async () => {
       res.json({ message: 'Review not added' });
     });
 
-    //
+    //get review
 
     app.get('/review/:id', async (req, res) => {
       const bookId = req.params.id;
