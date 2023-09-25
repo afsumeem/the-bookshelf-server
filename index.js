@@ -23,6 +23,7 @@ const run = async () => {
   try {
     const db = client.db('the-bookshelf');
     const bookCollection = db.collection('books');
+    const userCollection = db.collection('users');
 
     //get latest books
     app.get("/books", async (req, res) => {
